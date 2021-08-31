@@ -1,0 +1,727 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>INTERSPEECH 2021</title>
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/riken.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/github.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+
+				<section class="cover" data-background="figures/background-blur.jpg"  data-state="no-title-footer no-progressbar has-dark-background">
+
+					<h2 id='coverh2'>Alpha-Stable Autoregressive Fast Multichannel Nonnegative Matrix Factorization
+           for Joint Speech Enhancement and Dereverberation</h2>
+					<h1  id='title_seminar'>INTERSPEECH 2021 - A-V-3-2 </h1>
+					<h3><a href="https://matfontaine.github.io", id='github_url'>matfontaine.github.io</a></h3>
+					<p id='coverauthors'>
+						Mathieu FONTAINE<br />
+						mathieu.fontaine@riken.jp
+					</p>
+					<p id="date">
+					August 31st, 2021
+					</p>
+					<p>
+</br>
+<b>Mathieu FONTAINE</b>, Kouhei SEKIGUCHI, Aditya Arie NUGRAHA, Yoshiaki BANDO, Kazuyoshi YOSHII
+</p>
+					<img src="css/theme/img/inria-cover.svg" id="riken" class="logo" alt="">
+
+
+					<aside class="notes">
+						<ul>
+						<li>I was PhD student in Universite de Lorraine in Nancy on "alpha-stable processes for signal processing" audio source localization, source separation, denoising and restoration</li>
+						<li>Since October 2019, PostDoc in RIKEN institute "Artificial Intelligence Project" and Guest in Kyoto University in Kazuyoshi Yoshii team "Sound Scene Understanding"</li>
+						<li> This presentation deals with a technique that reduces the complexity of MNMF in the context of a large family of distribution</li>
+					</ul>
+					</aside>
+				</section>
+
+				<!-- Outline of the presentation -->
+				<section>
+					<h2>Outline</h2>
+						<h3> I - Autoregressive FastMNMF $\color{black}\text{[Sek. 20]}$</h3>
+						<h3> II - Alpha-Stable Autoregressive FastMNMF $\color{black}\text{[Fon. 21]}$</h3>
+						<h3> III - Parameter Estimation</h3>
+						<h3> IV - Speech Enhancement and Automatic Speech Transcription Evaluation</h3>
+						<h3> V - Conclusion and Future Works </h3>
+						<div class="references" style="float:left;">
+							<ul>
+								<li>Sekiguchi, K. et al. (2021, ICASSP). Autoregressive Fast Multichannel Nonnegative Matrix Factorization For Joint Blind Source Separation And Dereverberation</li>
+								<li>Fontaine, M. et al. (2021, INTERSPEECH). Alpha-Stable Autoregressive Fast Multichannel Nonnegative MatrixFactorization for Joint Speech Enhancement and Dereverberation</li>
+							</ul>
+						</div>
+
+				</section>
+				<!-- Introduction -->
+				<section class="cover" data-background="figures/background.jpg" data-state="no-title-footer no-progressbar has-dark-background">
+					<h2 id='coverh2'>I - Autoregressive FastMNMF</h2>
+				</section>
+
+				<section>
+					<h1>Why Speech Enhancement and Dereverberation ?</h1>
+					<img src="figures/ASR-1.png" width="95%" style="margin-left:1.5em; margin-top:0em;">
+					<aside class="notes">
+						<ul><li>Explain a bit the MBSS and the goal of it</li></ul>
+					</aside>
+				</section>
+
+				<section>
+					<h1>Why Speech Enhancement and Dereverberation ?</h1>
+					<img src="figures/ASR-2.png" width="95%" style="margin-left:1.5em; margin-top:0em;">
+					<aside class="notes">
+						<ul><li>Explain a bit the MBSS and the goal of it</li></ul>
+					</aside>
+				</section>
+
+				<section>
+					<h1>Why Speech Enhancement and Dereverberation ?</h1>
+					<img src="figures/ASR-3.png" width="95%" style="margin-left:1.5em; margin-top:0em;">
+					<aside class="notes">
+						<ul><li>Explain a bit the MBSS and the goal of it</li></ul>
+					</aside>
+				</section>
+
+				<section>
+					<h1>Why Speech Enhancement and Dereverberation ?</h1>
+					<img src="figures/ASR-4.png" width="95%" style="margin-left:1.5em; margin-top:0em;">
+					<aside class="notes">
+						<ul><li>Explain a bit the MBSS and the goal of it</li></ul>
+					</aside>
+				</section>
+
+				<section>
+					<h1>Why Speech Enhancement and Dereverberation ?</h1>
+					<img src="figures/ASR-5.png" width="95%" style="margin-left:1.5em; margin-top:0em;">
+					<aside class="notes">
+						<ul><li>Explain a bit the MBSS and the goal of it</li></ul>
+					</aside>
+				</section>
+
+        <section>
+					<h1>Why Speech Enhancement and Dereverberation ?</h1>
+					<img src="figures/ASR-5.png" width="95%" style="margin-left:1.5em; margin-top:0em;">
+					<aside class="notes">
+						<ul><li>Explain a bit the MBSS and the goal of it</li></ul>
+					</aside>
+				<div class="remark" style="margin-top:-0.1em">
+			  How to represent the direct sound and the noisy observation ?
+			  </div>
+				</section>
+
+				<section>
+					<h2>Autoregressive model</h2>
+					<ul>
+						<li>Autoregressive model of order $L$ + STFT representation </li>
+						<li>$N$ sources capted by $M$ sensors resulting in $T$ time frame and $F$ frequency bins</li>
+					</ul>
+				<span style="text-align:center">
+					<br>
+					$$
+            \bold{x}_{ft} = \bold{d}_{ft} + \bold{r}_{ft} \triangleq \underbrace{\sum_{n=1}^{N}\bold{d}_{nft}}_{{\color{black}\text{direct sound}}} + \underbrace{\sum_{l=\Delta}^{\Delta+L-1} \bold{B}_{fl} \bold{x}_{f,t-l}}_{\color{black}{\text{reverberation}}}
+					$$
+				</span>
+
+				<ul style="margin-top:1em;">
+					<li>$\Delta:$ Delay</li>
+					<li>$\bold{B}_{fl}:$ Coefficients of the AR process</li>
+				</ul>
+				<h2 style="margin-bottom:1em">Weighted Prediction Error (WPE)$~~\color{black}\text{[Nak. 10]}$</h2>
+				<span style="text-align:center">
+				$$
+				\bold{d}_{ft} \sim \mathcal{N}_{\mathbb{C}}\left(0, \lambda_{ft}\bold{I}\right);
+				\bold{x}_{ft} \mid \{\bold{x}_{f,t-l}\}_{l=1}^{L} \sim \mathcal{N}_{\mathbb{C}}\left(\bold{r}_{ft}, \lambda_{ft}\bold{I}\right)
+				$$
+			</span>
+				<ul style="margin-top:1em">
+					<li>
+						Maximization of $\log p \left(\{\bold{x}_{ft}\}_{f,t} \mid \{\bold{B}_{fl}\}_{f,l}, \{\lambda_{ft}\}_{f,t}\right)$ for parameter estimation
+					</li>
+				</ul>
+				<div class="references" style="float:left;">
+					<ul>
+						<li>Nakatani, T. et al. (2010, ASLP). Speech dereverberation based on variance-normalized delayed linear prediction</li>
+					</ul>
+				</div>
+				</section>
+
+	<section>
+	<h1>Spatial Gaussian Model + MNMF</h1>
+ 	<img src="figures/LGM.png" alt="" style="margin-left:auto; margin-right:auto; display:block" width=60%>
+	<img src="figures/MNMF.png" alt="" style="margin-left:auto; margin-right:auto; display:block; margin-top:0.8em" width=70%>
+
+	<aside class="notes">
+		<ul>
+			<li>Local Gaussian Model is the most famous one that admits the reproductive property</li>
+			<li>NMF is a dictionnary that decomposes the power spectrogram</li></ul>
+	</aside>
+<div class="references" style="float:left;">
+	<ul><li>Duong, N. et al. (2009, TASLP). Under-determined reverberant audio source separation using a full-rank spatial covariance model.</li></ul>
+</div>
+</section>
+
+<section>
+	<h1>Autoregressive (AR) Fast Gaussian MNMF Models</h1>
+	<h2> AR Independent Low-Rank Matrix Analysis (AR-ILRMA) ${\color{black}\text{[Kag. 18}]}$ </h2>
+	<ul>
+		<li>$\bold{d}_{nft} = \bold{a}_{nf}s_{nft} \quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \text{(Direct sound propagation model)}$</li>
+		<li> Then $\bold{d}_{nft} \sim \mathcal{N}_{\mathbb{C}}\left({\color{green}\lambda_{nft}}\bold{a}_{nf}\left(\bold{a}_{nf}\right)^{\mathrm{H}}\right)\quad\quad ~~\text{(Rank-1 SCM model)}$</li>
+		<li> MNMF model for ${\color{green}\lambda_{nft}}$ parameters</li>
+	</ul>
+	<h2>AR-Fast MNMF 2: a joint diagonalization (JD) technique${\color{black}\text{ [Sek. 21]}}$</h2>
+	<ul>
+		<li>$\bold{d}_{nft} \sim \mathcal{N}_{\mathbb{C}}\left({\color{green}\lambda_{nft}}\underbrace{\bold{Q}_f^{-1}\mathrm{Diag}(\tilde{\bold{g}}_{n})\bold{Q}_f^{-\mathrm{H}}}_{\color{blue}=\bold{G}_{nf}}\right)$</li>
+		<li> MNMF model for ${\color{green}\lambda_{nft}}$ parameters</li>
+		<li>AR-ILRMA $\subset$ AR-FastMNMF2
+	</ul>
+
+	<aside class="notes">
+		<ul>
+			<li>Fast in the sense reduce the number of parameters to estimate</li>
+			<li>preserve a good performance or improve it</li>
+			<li>interpretation of FastMNMF2: columns of Q are steering vectors as demixing vector of ILRMA and $g_{nm}$ are weights of rank-1 SCM of the $m^{th}$ direction of source n</li></ul>
+	</aside>
+	<div class="references" style="float:left;">
+	<ul><li>Kagami, H. et al. (2018, ICASSP). Joint separation and dereverberation of reverberant mixtures with determined multichannel non-negative matrix factorization</li>
+			<li>Sekiguchi, K. et al. (2021, ICASSP). Autoregressive Fast Multichannel Nonnegative Matrix Factorization For Joint Blind Source Separation And Dereverberation</li>
+	</ul>
+	</div>
+</section>
+
+<section>
+	<h1 style="margin-top:-1em">AR-FastMNMF2 Optimization</h1>
+	<h2> Parameter estimation </h2>
+				<center>$$\tilde{d}_{ftm} = \left|\bold{q}_{fm}^{\mathrm{H}}\bold{d}_{ft}\right|^{2};
+					 \tilde{y}_{ftm} = \sum_{n=1}^{N}\lambda_{nft}\tilde{g}_{nm};
+					 \bold{V}_{fm} = \frac{1}{T}\sum_{t=1}^{T}\bold{d}_{ft}\bold{d}_{ft}^{\mathrm{H}} y_{ftm}^{-1}
+					 $$</center>
+	<ul>
+		<li> Expectation-Maximization approach $\implies$ maximization of the log-likelihood</li>
+		<li>$w_{nfk}\leftarrow w_{nfk}\sqrt{\frac{\sum_{t, m=1}^{T, M} h_{nkt}
+			\tilde{g}_{nm} \tilde{d}_{ftm}\tilde{y}_{ftm}^{-2}}
+			{\sum_{t, m=1}^{T, M} h_{nkt} \tilde{g}_{nm} \tilde{y}_{ftm}^{-1}}}; ~~
+			h_{nkt}\leftarrow h_{nkt}\sqrt{\frac{\sum_{f, m=1}^{F, M} w_{nfk}
+			 \tilde{g}_{nm} \tilde{d}_{ftm}\tilde{y}_{ftm}^{-2}}
+			 {\sum_{f, m=1}^{F, M} w_{nfk} \tilde{g}_{nm} \tilde{y}_{ftm}^{-1}}};
+			 $</li></br>
+		<li>
+			$\tilde{g}_{nm}\leftarrow \tilde{g}_{nm}\sqrt{\frac{\sum_{f, t, m=1}^{F, T, M} \lambda_{nft}
+		\tilde{d}_{ftm}\tilde{y}_{ftm}^{-2}}
+			{\sum_{f, t, m=1}^{F, T, M} \lambda_{nft}\tilde{y}_{ftm}^{-1}}}$
+
+		</li>
+
+			<li style="margin-top:3em;">
+		$\bold{q}_{fm}\leftarrow(\bold{Q}_f \bold{V}_{fm})^{-1}\bold{e}_m;\quad
+		\bold{q}_{fm}\leftarrow(\bold{q}_{fm}^{\mathrm{H}}\bold{V}_{fm}\bold{q}_{fm})^{-\frac{1}{2}}\bold{q}_{fm}$ ${\color{black}\text{[Ono 11]}}$
+	</li>
+ <li> AR coefficients $\bold{B} \triangleq \{\bold{B}_{fl}\}_{f,l=1}^{F,L}$ are updated as in ${\color{black}\text{[Nak. 11]}}$ </li>
+
+	</ul>
+	<aside class="notes">
+		<ul>
+			<li>find a lower-bound of the log-likelihood</li>
+			<li>equivalent to minimize the IS divergence</li>
+			<li>non-increase cost function guarantee</li>
+    </ul>
+	</aside>
+
+	<div class="references" style="float:left; margin-top:0.1em">
+	<ul>
+  <li>N. Ono et al. (WASPAA, 2011). Stable and fast update rules for independent vector analy-sis based on auxiliary function technique.</li>
+	<li>T. Nakatani et al. (ASLP, 2020). Jointly optimal denoising, dereverberation,and source separation.</li>
+	</ul>
+	</div>
+	</section>
+
+	<!-- alpha-stable Theory -->
+	<section class="cover" data-background="figures/background.jpg" data-state="no-title-footer no-progressbar has-dark-background">
+		<h2 id='coverh2'>II - Alpha-Stable Autoregressive FastMNMF</h2>
+
+		<aside class="notes">
+			<ul>
+				<li>All the distributions that can be informaly expressed as a Gaussian</li>
+			</ul>
+		</aside>
+	</section>
+
+	<section>
+
+ 	<h1>Why heavy-tailed models for dereverberation?</h1>
+	<ul><li> Direct sound $\implies$ is an outlier in the time domain compare to the early reflections and the late reverberation</li>
+		<img src="figures/RIR.png" alt="" style="margin-left:auto; margin-right:auto; display:block; margin-top:0.8em" width=70%>
+	 <li>NMF initialization $\implies$ often tricky with a light-tail model${~\color{black}\text{[Bou. 08]}}$</li>
+	 	 <li>Light tails $\implies$ less robust against impulsive noise or uncommon scenario</li>
+	</ul>
+	 <img src="figures/tails.png" alt="" style="margin-left:auto; margin-right:auto; display:block; margin-top:0.8em" width=35%>
+
+<aside class="notes">
+ <ul>
+	 <li>heavy-tailed means that asymptotically, the tail of the pdf. are lower than the one of the exponential distribution</li>
+	 	 <li>MNMF </li>
+ </ul>
+</aside>
+ <div class="references" style="float:left; margin-top:0.8em">
+ <ul><li>Boutsidis C. (2008, Pattern Recognition). SVD based initialization: A head start for nonnegative matrix factorization</li>
+ </ul>
+ </div>
+	</section>
+
+	<section>
+		<h1>Why $\alpha$-stable theory ?</h1>
+		<ul>
+			<li>Heavy-tailed  + stability by linear combination (sum of $\alpha$-stable is $\alpha$-stable)</li>
+			<li>$\alpha \in (0,2]$: the smaller it is, the heavier are the tails of the distribution</li>
+			<li>$\alpha=2$: Gaussian, $\alpha=1$: Cauchy, $\alpha=0.5$: Levy</li>
+			<li>Generalized the multichannel Wiener filter in the fractional domain${~\color{black}\text{[Fon. 20]}}$</li>
+		</ul>
+
+		<video style="margin-top:2.7em; margin-bottom:1em;", data-autoplay src="figures/gaussian.mp4", width="100%">
+		</video>
+		<div class="references" style="float:left; margin-top:0.8em">
+		<ul><li>Samoradnitsky G. et al. (Chapman, 1994). Non-Gaussian Random Processes: Stochastic Models with Infinite Variance.</li>
+    <li>Fontaine M. et al. (Signal, 2020). Separation of $\alpha$-stable Random Vectors.</li>
+		</ul>
+		</div>
+	</section>
+
+	<section>
+	<h1>Complex-valued Multivariate Isotropic Symmetric
+		 Elliptically Contoured $\alpha$-stable distribution ($\mathcal{S}_{\mathbb{C}}^{\alpha}(0, \bold{R}))$</h1>
+	<ul><li>Two parameters: $\alpha$ and a positive semidefinite shape matrix $\bold{R}$</li>
+		<li>$\bold{u}\sim\mathcal{S}_{\mathbb{C}}^{\alpha}$ can be seen as a Gaussian where the covariance is perturbed</li>
+		<li>The shape matrix model designs a natural AR-FastMNMF extension </li>
+</ul>
+<img src="figures/cond-gauss.png" alt="" style="margin-left:auto; margin-right:auto; display:block; margin-top:0.8em" width=65%>
+
+		 <aside class="notes">
+		  <ul>
+		 	<li>rotationnaly invariant</li>
+		 	<li>infinite divisible distribution: can be decomposed as a sum of i.i.d. random vector</li>
+		 	<li>NIG univariate: stable by linear combination</li>
+			<li>NIG multivariate: stable only along the shape parameter delta</li>
+		 </aside>
+	</section>
+
+	<section>
+		<h1>$\alpha$-AR-FastMNMF</h1>
+    <ul>
+			<li>Source TF-independent $\mathcal{S}_{\mathbb{C}}^{\alpha}$ model + ARFastMNMF on direct sources entries $\bold{d}_{nft}$:</li>
+			<br>
+		</ul>
+		<center>
+					$\mathbf{d}_{nft} \mid {\color{red} \phi_{nt}} \sim \mathcal{N}_{\mathbb{C}}\left(\mathbf{0},{\color{red} \phi_{nt}}\bold{Y}_{nft}\right)$
+		</center>
+		<ul style="margin-top:1em;">
+			<li>$\bold{Y}_{nft}\triangleq\lambda_{nft}\bold{Q}_f^{-1}\mathrm{Diag}(\tilde{\bold{g}}_{n})\bold{Q}_f^{-\mathsf{H}}$</li>
+		<li> ${\color{red} \bold{\Phi}\triangleq \{\phi_{nt}\}_{n,t=1}^{N,T}}$ only depends on source index and time frame</li>
+		<li>The mixing model becomes:</li>
+		</ul>
+		<center>
+			<br>
+		$\mathbf{x}_{ft} \mid {\color{red} \bold{\Phi}} \sim \mathcal{N}_{\mathbb{C}}\left(\mathbf{0},\sum_{n=1}^{N}{\color{red}\phi_{nt}}\bold{Y}_{nft}\right)$
+
+<br>
+	</center>
+	<ul>
+
+<li>Knowing $\bold{\Theta}=\{\{\lambda_{nft}\}, \bold{B},\{\bold{Q}_{f}\}, \{\tilde{\bold{g}}_{n}\}\}, {\color{red} \bold{\Phi}}, \bold{x}_{ft}, \alpha$,   we get:</li>
+$$\mathbb{E}_{{\color{red} \bold{\Phi}} \mid \bold{x}_{ft}}\left[\mathbb{E}\left[\mathbf{d}_{nft}\mid\mathbf{\Theta}, {\color{red} \bold{\Phi}}, \bold{x}_{ft}, \alpha\right]\right]
+	= \mathbb{E}_{{\color{red} \bold{\Phi}} \mid \bold{x}_{ft}}\left[{\color{red} \phi_{nt}}\bold{Y}_{nft}\left(\sum_{n^{\prime}=1}^{N}{\color{red} \phi_{n^{\prime}t}}\bold{Y}_{n^{\prime}ft}\right)^{-1}
+    \right]\bold{d}_{ft}$$
+	</ul>
+
+	<div class="remark" style="margin-top:1.1em">
+	How to estimate the parameters ?
+	</div>
+		<aside class="notes">
+		 <ul>
+		 <li>The linear stability of laws is preserved but not linearity of parameters for vector case</li>
+		 <li>use the conditional Gaussianity as an alternative representation</li>
+		</aside>
+	</section>
+
+	<!-- alpha-FastMNMF-->
+	<section class="cover" data-background="figures/background.jpg" data-state="no-title-footer no-progressbar has-dark-background">
+		<h2 id='coverh2'>III: Parameter Estimation</h2>
+	</section>
+
+
+
+ <section>
+	 <h1>Lower-bound</h1>
+	 We develop a Majorization-Minimization algorithm for the parameter estimation
+	 <ul>
+	<li>Consider the LL: $\log p(\bold{X} |\bold{\Theta},\alpha) = \log \int p(\bold{X} |\bold{\Theta}, \bold\Phi) p(\bold\Phi) d\bold\Phi$</li>
+	<li>We discretize and minimize the LL by the following lower-bound:</li>
+</ul></br></br>
+
+<center>
+	$ \log \, p(\bold{X}|\bold{\Theta})\ge -\frac{1}{P}\sum_{f,t,m=1}^{F,T,M}\sum_{p=1}^{P}\left(\frac{\tilde{d}_{ftm}}{\tilde{y}_{ftmp}} +\log\tilde{y}_{ftmp}\right)
++ T\sum_{f=1}^{F}\log\left|\bold{Q}_{f}\bold{Q}_{f}^{\mathsf{H}}\right|-\mathrm{KL}[q(\phi_{nt})\|p(\phi_{nt})]$
+</center>
+
+
+<ul>
+<li> $\text{KL}$ denotes the Kullback-Leibler divergence</li>
+<li>$\tilde{d}_{ftm} = \left|\bold{q}_{fm}^{\mathsf{H}}\bold{d}_{ft}\right|, \tilde{y}_{ftmp} \!=\! \sum_{n,k=1}^{N,K} \tilde{\phi}_{ntp} w_{nkf} h_{nkt} \tilde{g}_{nm}$</li>
+<li>$\forall p, \tilde{\phi}_{ntp}$ are realizations of $p\left(\phi_{nt} \mid \bold{X}, \bold{\Theta}, \alpha\right)$
+<li>$q\left(\theta\right)$ satisfies the equality with the LL when $ q(\theta) = p\left(\phi \mid \bold{X}, \bold{\Theta}\right)$</li>
+</ul>
+<div class="remark" style="margin-top:0.8em">
+How to estimate $\bold{\Theta}, \bold\Phi$ and $\alpha$ ?
+</div>
+
+<aside class="notes">
+ <ul>
+ <li>Variational inference procedure</li>
+</ul>
+</aside>
+
+ </section>
+
+ <section>
+ <h1>E-Step: computation of $\bold\Phi$ </h1>
+
+<ul>
+	<li>$p\left(\phi_{nt} \mid \bold{X}, \bold{\Theta}, \alpha\right)$ is intractable</li>
+	<li>Metropolis-Hastings algorithm is used to get samples $ \tilde{\phi}_{ntp}$ </li>
+</ul>
+<h2>Metropolis-Hastings Procedure</h2>
+<ol>
+	<li>Draw samples from
+$\phi_{nt,f}^{\text{new}}\sim\mathcal{PS}^\alpha\left(2\cos\left(\frac{\pi\alpha}{4}\right)^{2/\alpha}\right)$</li>
+	<li>Sample $\nu\sim\mathcal{U}\left(\left[0,1\right]\right)$ from the uniform distribution</li>
+	<li>Compute the acceptance probability for all $f$:</li>
+	<br>
+	<center>$\text{acc}\!\left(\!\phi_{nt,f}^{\text{old}}\!\rightarrow\!\phi_{nt,f}^{\text{new}}\!\right) = \min\!\left(\!1,\frac{u_{nft}\left(\phi_{nt,f}^{\text{\text{new}}}\right)}{u_{nft}\left(\phi_{nt,f}^{\text{\text{old}}}\right)}\!\right)$
+  <br>
+	</center>
+		$u_{nft}$: Gaussian distribution PDF
+ <!-- with covariance matrix  $\phi_{nt,f}\lambda_{nft}\text{Diag}\left(\tilde{\mathbf{g}}_{n}\right)+\sum_{n^{\prime}\neq n}\phi_{n^{\prime}t,f}\lambda_{n^{\prime}ft}\text{Diag}\left(\tilde{\mathbf{g}}_{n^{\prime}}\right)$ -->
+		<li>Acceptance test:</li>
+	  <ul>
+		<li>if $\nu\!<\!\text{acc}\!\left(\phi_{nt,f}^{\text{old}}\!\rightarrow\!\phi_{nt,f}^{\text{new}}\right)$, $\phi_{nt,f}\!=\!\phi_{nt,f}^{\text{new}}$ (accept)</li>
+		<li>otherwise, $\phi_{nt,f}\!=\!\phi_{nt,f}^{\text{old}}$ (reject) </li>
+	</ul>
+		<li>Average by computing $\tilde{\phi}_{ntp} \triangleq \frac{1}{F}\sum_{f=1}^{F}\phi_{nt,f}$</li>
+</ol>
+ </section>
+
+ <section>
+	<h1>M-Step: estimation of $\Theta$</h1>
+	Multiplicative update rules similar to AR-FastMNMF:
+	<center>$$\tilde{d}_{ftm} = \left|\bold{q}_{fm}^{\mathrm{H}}\bold{d}_{ft}\right|^{2};
+		 \tilde{y}_{ftmp} = \sum_{n,p=1}^{N,P}{\color{red}\tilde{\phi}_{ntp}}\lambda_{nft}\tilde{g}_{nm};
+		 \bold{V}_{fm} = \frac{1}{TP}\sum_{t,p=1}^{T, P}\bold{d}_{ft}\bold{d}_{ft}^{\mathrm{H}} \tilde{y}_{ftmp}^{-1}
+		 $$</center>
+ <ul style="margin-top:1em;">
+	 <li>$w_{nfk}\leftarrow
+		  w_{nfk}\sqrt{\frac{\sum_{t, m, p=1}^{T, M, P}{\color{red}\tilde{\phi}_{ntp}} h_{nkt}
+		 \tilde{g}_{nm} \tilde{d}_{ftm}\tilde{y}_{ftmp}^{-2}}
+		 {\sum_{t, m, p=1}^{T, M, P} {\color{red}\tilde{\phi}_{ntp}}h_{nkt} \tilde{g}_{nm} \tilde{y}_{ftmp}^{-1}}};$
+	 </li>
+<br>
+		 <li>$h_{nkt}\leftarrow h_{nkt}\sqrt{\frac{\sum_{f, m, p=1}^{F, M, P} {\color{red}\tilde{\phi}_{ntp}}w_{nfk}
+			\tilde{g}_{nm} \tilde{d}_{ftm}\tilde{y}_{ftmp}^{-2}}
+			{\sum_{f, m, p=1}^{F, M, P} {\color{red}\tilde{\phi}_{ntp}}w_{nfk} \tilde{g}_{nm} \tilde{y}_{ftmp}^{-1}}};
+		$</li>
+			</br>
+	 <li>
+		 $\tilde{g}_{nm}\leftarrow \tilde{g}_{nm}\sqrt{\frac{\sum_{f, t, m, p=1}^{F, T, M, P}{\color{red}\tilde{\phi}_{ntp}} \lambda_{nft}
+	 \tilde{d}_{ftm}\tilde{y}_{ftmp}^{-2}}
+		 {\sum_{f, t, m, p=1}^{F, T, M, P}{\color{red}\tilde{\phi}_{ntp}} \lambda_{nft}\tilde{y}_{ftmp}^{-1}}}$
+
+	 </li>
+
+		 <li style="margin-top:1.5em;">
+	 $\bold{q}_{fm}\leftarrow(\bold{Q}_f \bold{V}_{fm})^{-1}\bold{e}_m;\quad
+	 \bold{q}_{fm}\leftarrow(\bold{q}_{fm}^{\mathrm{H}}\bold{V}_{fm}\bold{q}_{fm})^{-\frac{1}{2}}\bold{q}_{fm}$
+ </li>
+<li> Same update of $\bold{B} \triangleq \{\bold{B}_{fl}\}_{f,l=1}^{F,L}$  where
+$\tilde{y}_{ftm}$ are replaced by $\frac{1}{P}\sum_{p=1}^{P}\tilde{y}_{ftmp}$</li>
+ </ul>
+</section>
+<section>
+<h1>Estimation of $\alpha$</h1>
+<ul>
+<li>$\alpha$-stable distributions also admits a generalized central limit theorem</li>
+<li> A robust estimation of $\alpha$ can be given for i.i.d. realizations </li>
+</ul>
+<h2>Estimation method</h2>
+<ul>
+	<li>Let assume that $\bold{X}$ contains $T$ time frame</li>
+<li>Define $B \!\triangleq\! \left\{\bold{x}_{ft}\right\}_{f,t=1}^{F,T^\prime} \triangleq \left\{\bold{x}_{b}\right\}_{b=1}^{F,T^\prime}$ a non-overlapping set of $T^{\prime} < T$ frame</li>
+<li>The shape matrices $\bold{R}_{ft}$ are assumed to be i.i.d</li>
+<li> Random split of B into $B_{2}$ minibatches of $B_{1}$ samples with $|B| = B_{1}B_{2}$ </li>
+<li>$\hat{\alpha}_{B}$ is given by ($\bold\xi_{b^\prime} \!\triangleq\! \sum_{b^{\prime\prime}=1}^{B_{1}} \bold{x}_{b^{\prime\prime} + (b^{\prime}-1)B_{1}}$):</li>
+<center>
+	$    \frac{1}{\widehat{\alpha}_{B}} \!\triangleq\! \frac{1}{\log B_1} \!\left(\! \frac{1}{B_2}\!\sum_{b^\prime=1}^{B_2}\log\left\lVert\bold{\xi}_{b^\prime}\right\rVert \!-\! \frac{1}{\left|B\right|}\!\sum_{b=1}^{\left|B\right|}\log\left\lVert\bold{x}_{b}\right\rVert \!\right),
+
+	$
+</center>
+</ul>
+<img src="figures/alpha_est.png" alt="" style="margin-left:auto; margin-right:auto; display:block; margin-top:0.1em" width=30%>
+</section>
+
+ <!-- Evaluation -->
+ <section class="cover" data-background="figures/background.jpg" data-state="no-title-footer no-progressbar has-dark-background">
+	 <h2 id='coverh2'>IV - Speech Enhancement and Automatic Speech Transcription Evaluation</h2>
+ </section>
+
+ <section>
+ 	<h1>Settings</h1>
+	<h2>Dataset description</h2>
+ 	<ul>
+ 	<li>REVERB CHALLENGE dataset sampled at $16~$kHz recorded with $8$ microphones</li>
+	<li>RT$_{60}$ are either 0.25, 0.5 or 0.7s</li>
+ 	<li>3 signal to noise ratio (SNR) level: $0, 5$ dB</li>
+	<li>$2$ distances: "near" (50cm between mic and speaker) & "far" ( $\simeq$ 2m)</li>
+	<li>$M \in \left\{2, 8\right\}$ are considered with $N=M$ (to include AR-ILRMA)</li>
+	<li>enhanced speech source selected as the one having the hightest average energy</li>
+	<li>$20$ utterances for all cases</li>
+	<h2>Scores</h2>
+	<li>Signal to Distorsion Ratio (SDR), Perceptual Evaluation of Speech Quality (PESQ)<b>(higher is better)</b> and word error rate ratio <b>(lower is better)</b></li>
+  <li>Transformer-based ASR from Speechbrain is used</li>
+		</ul>
+ </section>
+
+ <section>
+	<h1>Baseline Methods and Configuration</h1>
+	<h2>Methods</h2>
+	<ul>
+		<li><b>$\alpha$-AR-FastMNMF</b>: Proposed method for $\alpha < 2$ and AR-FastMNMF when $\alpha=2$</li>
+		<li><b>$\alpha$-AR-ILRMA</b>: Proposed ILRMA version for $\alpha < 2$ and AR-ILRMA when $\alpha=2$</li>
+	</ul>
+	<h2>Settings</h2>
+	<ul>
+	<li>$200$ iterations for the EM algorithm with $50$ first iterations using AR-FastMNMF</li>
+<li>NMF coefficients are randomly initialized</li>
+	<li> Demixing matrix in AR-ILRMA and $\bold{Q}_{f}$ are initialized as identity matrix $\forall f$</li>
+	<li>Tap length $L\in\{0,4\}$ and delay $\Delta=3$</li>
+	<li>$T^{\prime} = 100$ for $\alpha$ estimation</li>
+	<li>$P=10$ MH sampling for $40$ iterations with a burning period of $30$</li>
+	</ul>
+	<aside class="notes">
+	 <ul>
+	 <li>Rank 1 constraint SCM</li>
+	 <li>This init was chosen because it is the one that produces the best results for FastMNMF</li>
+	</aside>
+ </section>
+ <section>
+	<h1>SDR/PESQ/WER performances</h1>
+	<img src="figures/results.png" alt="" style="margin-left:auto; margin-right:auto; display:block" width=85%>
+	<ul>
+		<li> $L=0$, ILRMA sometimes achieves the best WER score.</li>
+		<li>Combination of AR + $\alpha$ + FastMNMF achieves the best scores in general</li>
+	</ul>
+
+	<aside class="notes">
+	 <ul>
+	 <li>Some instabilities when $\alpha$ becomes small because of a sampling containing a wide range value (more MH could solve this issue)</li>
+	</aside>
+ </section>
+
+ <section>
+	 <h1>Impact of $\alpha$ on spectrogram estimation</h1>
+	 <img src="figures/spec_alpha.png" alt="" style="margin-left:auto; margin-right:auto; display:block; margin-top:1em" width=70%>
+	 <ul>
+		<li> if $\alpha$ is too small, some phoneme harmonics may vanished</li>
+		 <li> $\alpha_{opt}$ depicts a spectrogram less noisy than Gaussian in silence</li>
+
+
+	 </ul>
+ </section>
+
+<section>
+<h1 style="margin-top:-0.8em">Speech enhancement demo</h1>
+<h2 style="margin-top:1em"> SNR=$0$dB, far distance ($\simeq 2m$), $RT_{60}=0.5s$</h2>
+<div class="multiCol" style="margin-top:-0.0em">
+	<div class="col">
+		<label for="Mix">
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp Noisy speech<br>
+</label>
+<audio id="Mix" controls>
+<source
+		type="audio/mpeg"
+		src="multimedia/data/noisy_speech.wav"/>
+	</audio>
+</div>
+<div class="col">
+	<label for="clean1">
+			&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspClean Speech<br>
+	</label>
+		<audio id="clean1" controls>
+		<source
+				type="audio/mpeg"
+				src="multimedia/data/clean_speech.wav"/>
+			</audio>
+		</div>
+</div>
+
+<h2 style="margin-top:1em">$\alpha$-AR-ILRMA</h2>
+<div class="multiCol" style="margin-top:-0.8em">
+	<div class="col">
+		<label for="AR-ILRMA_Gauss">
+		&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp $\alpha=2$<br>
+		</label>
+			<audio id="AR-ILRMA_Gauss" controls>
+			<source
+					type="audio/mpeg"
+					src="multimedia/data/AR-ILRMA_Gauss.wav"/>
+				</audio>
+	</div>
+	<div class="col">
+		<label for="AR-ILRMA_alpha">
+		&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp$0<\alpha< 2$<br>
+		</label>
+			<audio id="AR-ILRMA_alpha" controls>
+			<source
+					type="audio/mpeg"
+					src="multimedia/data/AR-ILRMA_alpha.wav"/>
+				</audio>
+	</div>
+</div>
+<h2 style="margin-top:1em">$\alpha$-AR-FastMNMF</h2>
+<div class="multiCol" style="margin-top:-0.8em">
+	<div class="col">
+		<label for="AR-FastMNMF_Gauss">
+		&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp $\alpha=2$<br>
+		</label>
+			<audio id="AR-FastMNMF_Gauss" controls>
+			<source
+					type="audio/mpeg"
+					src="multimedia/data/AR-FastMNMF_Gauss.wav"/>
+				</audio>
+	</div>
+	<div class="col">
+		<label for="AR-FastMNMF_alpha">
+		&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp&nbsp	&nbsp&nbsp$0<\alpha< 2$<br>
+		</label>
+			<audio id="AR-FastMNMF_alpha" controls>
+			<source
+					type="audio/mpeg"
+					src="multimedia/data/AR-FastMNMF_alpha.wav"/>
+				</audio>
+	</div>
+</div>
+		<aside class="notes">
+  	 <ul>
+ 	 <li> As a reminder, ILRMA is only determined</li>
+ 		<li>more background noise</li>
+		<li>close to no noise for the bus alpha. just remains a bit of noise in the high frequency</li>
+ 	</ul>
+ </aside>
+</section>
+
+
+
+
+
+<!-- alpha-stable Theory -->
+<section class="cover" data-background="figures/background.jpg" data-state="no-title-footer no-progressbar has-dark-background">
+	<h2 id='coverh2'>V - Conclusion and Future Works</h2>
+</section>
+<section>
+<h1>Conclusion & Future Works</h1>
+<h2>Conclusion</h2>
+<ul>
+<li>Extension from Gaussian AR-FastMNMF to AR-$\alpha$-FastMNMF</li>
+<li>Interprtability of impulse variable for dereverberation</li>
+<li>Compare to previous studies, automatic optimization of $\alpha$</li>
+</ul>
+<h2>Future works</h2>
+<h3> Current parameter model </h3>
+<ul style="margin-top:-0.6em;">
+<li> Replace $\alpha$ by $\alpha_{t}$ to model the dynamic range along time</li>
+</ul>
+</br>
+<h3 style="margin-top:0.5em;"> Deep Neural Network extensions </h3>
+<ul style="margin-top:-0.6em;">
+<li>Replace the NMF speech model by a heavy-tailed deep speech prior $\color{black}\text{[Fon. 19]}$</li>
+<li>Use a normalizing flow applied on FastMNMF decomposition $\color{black}\text{[Nug. 20]}$</li>
+</ul>
+</br>
+<div class="references" style="float:left; margin-top:0.1em">
+<ul><li>A.A. Nugraha, K. Sekiguchi, M. Fontaine, Y. Bando, K. Yoshii (SPL, 2020) Flow-Based Independent Vector Analysis for Blind Source Separation.</li>
+<li>M. Fontaine, A.A. Nugraha, R. Badeau, K. Yoshii and A. Liutkus (EUSIPCO, 2019). Cauchy Multichannel Speech Enhancement with a Deep Speech Prior.</li>
+</ul>
+</div>
+	<!-- <div class="references" style="float:left; margin-top:0.1em">
+<ul><li>M. Fontaine, K. Sekiguchi, A.A. Nugraha, Y. Bando, K. Yoshii. Robust Fast Multichannel Nonnegative Matrix Factorization Based on Gaussian Scale Mixture Representation for Blind Source Separation. IEEE Transactions on audio, Speech and Language Processing (TASLP), 2021 (Prepared for Submission)
+</ul></li>
+</div> -->
+<aside class="notes">
+ <ul>
+<li> multi alpha: different dynamic for each source</li>
+<li>using the so-called covariation, a generalization of the covariance to develop a update parameter directly in the alpha stable representation</li>
+<li>in Gaussian case, a local gaussian model (TF bin and independent where the variance represents the PSD) is derived
+	from the assumption in the time domain of a WSS-GP (stationnary). The extension in alpha-stable is alpha-harmonizable process in the time domain
+</li>
+</ul>
+</aside>
+</section>
+
+<section>
+<div class="affirmation" style="margin-top:5em;"> Thank you for your attention ! Questions ?</div>
+</section>
+	</div>
+
+
+
+<div class='footer'>
+	<img src="css/theme/img/inria-bottom.svg" alt="Logo" />
+	<div id="middlebox">Alpha Autoregressive FastMNMF</div>
+	<ul>
+	</ul>
+</div>
+			</div>
+
+		</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				controls: false,
+				progress: true,
+				history: true,
+				center: false,
+				slideNumber: true,
+				minScale: 0.1,
+				maxScale: 5,
+				transition: 'none', //
+
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/math-katex/math-katex.js', async: true },
+					{ src: 'plugin/reveald3/reveald3.js' },
+					{ src: 'plugin/highlight/highlight.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
